@@ -310,6 +310,38 @@ function StudentBlock(props: StudentBlockProps) {
   );
 }
 
+/** Dummy publish actions for the demo — no backend; just a click confirmation. */
+function PublishActions() {
+  const [sent, setSent] = useState<null | "class" | "students">(null);
+  return (
+    <div className="mt-10 flex flex-col items-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => setSent("class")}
+          className="inline-flex items-center gap-2 rounded-full bg-teal-700 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-teal-700/20 transition hover:-translate-y-0.5 hover:bg-teal-800"
+        >
+          <SparkleIcon className="size-4" />
+          Publish to Class
+        </button>
+        <button
+          type="button"
+          onClick={() => setSent("students")}
+          className="inline-flex items-center gap-2 rounded-full border-2 border-teal-300 bg-white px-6 py-3 text-sm font-bold text-teal-800 transition hover:-translate-y-0.5 hover:border-teal-500 hover:bg-teal-50"
+        >
+          Publish to a few students
+        </button>
+      </div>
+      {sent ? (
+        <p className="animate-breathe flex items-center gap-1.5 rounded-full bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
+          <CheckCircleIcon className="size-4" />
+          {sent === "class" ? "Published to your whole class" : "Shared with selected students"}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function LessonPreview({ module }: { module: LessonModule }) {
   const [blocks, setBlocks] = useState<LessonBlock[]>(module.blocks);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -438,6 +470,7 @@ export function LessonPreview({ module }: { module: LessonModule }) {
             </div>
           ))}
         </div>
+        <PublishActions />
         <div className="mt-8 flex items-center justify-center gap-2 text-sm font-medium text-slate-500"><CheckCircleIcon className="size-5 text-emerald-500" /> Learn at your own pace</div>
       </section>
       <FeedbackDrawer

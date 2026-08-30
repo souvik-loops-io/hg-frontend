@@ -25,14 +25,14 @@ export default async function PreviewPage({
   const { lesson } = await searchParams;
   if (!lesson) redirect("/curriculum");
 
-  let module = null;
+  let mod = null;
   try {
-    module = await fetchLessonModule(lesson);
+    mod = await fetchLessonModule(lesson);
   } catch {
-    module = null;
+    mod = null;
   }
 
-  if (!module) {
+  if (!mod) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-[#f6fbfa] px-6 text-center text-slate-700">
         <h1 className="text-2xl font-bold tracking-[-0.03em] text-slate-900">Couldn&apos;t load this lesson</h1>
@@ -46,5 +46,5 @@ export default async function PreviewPage({
     );
   }
 
-  return <LessonPreview module={module} />;
+  return <LessonPreview module={mod} />;
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArtifactCard } from "@/components/dashboard/artifact-card";
 import { CreateArtifactCard } from "@/components/dashboard/create-artifact-card";
 import { SampleLessonCard } from "@/components/dashboard/sample-lesson-card";
+import { StudentAnalytics } from "@/components/dashboard/student-analytics";
 import { WeeklyFocusCard } from "@/components/dashboard/weekly-focus-card";
 import { ArrowRightIcon } from "@/components/icons";
 import { Page } from "@/components/shell/app-shell";
@@ -65,6 +66,8 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
+
+      <StudentAnalytics />
     </Page>
   );
 }
