@@ -24,8 +24,8 @@ export default async function LessonFlowPage({
 
   if (lesson) {
     try {
-      const module = await fetchLessonModule(lesson);
-      if (module) return <LiveWorkspace module={module} />;
+      const engineLesson = await fetchLessonModule(lesson);
+      if (engineLesson) return <LiveWorkspace module={engineLesson} />;
     } catch {
       // Engine unreachable — fall through to the fixture rather than erroring.
     }

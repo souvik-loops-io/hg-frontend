@@ -49,11 +49,11 @@ export function MaterialDropzone() {
       </span>
 
       <h2 className="mt-6 text-xl font-bold tracking-[-0.02em]">
-        Drag and drop materials here
+        Add materials (optional)
       </h2>
       <p className="mx-auto mt-2 max-w-sm text-[0.9375rem] leading-relaxed text-ink-soft">
-        Every lesson is grounded in what you upload. Add a worksheet, chapter or
-        past plan — <span className="font-medium text-ink">.txt, .md or .pdf</span>.
+        Add a worksheet, chapter or past plan for extra context, or continue
+        without one. <span className="font-medium text-ink">.txt, .md or .pdf</span>.
       </p>
 
       <input
