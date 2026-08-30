@@ -165,14 +165,6 @@ export function FoundationForm({
       return;
     }
 
-    // The engine grounds every lesson in an uploaded material — no upload, no run.
-    if (materials.length === 0) {
-      setError(
-        "Upload at least one teaching material — every lesson is grounded in what you provide.",
-      );
-      return;
-    }
-
     setBuilding(true);
     try {
       const board = boardForFramework(values.framework, options);
@@ -181,7 +173,7 @@ export function FoundationForm({
         options.subjects.find((option) => option.value === values.subject)
           ?.label ?? values.subject;
 
-      // Ingest each material first, collecting the ids the lesson is grounded in.
+      // Materials are optional; ingest any attached files before generating.
       const materialIds: string[] = [];
       for (const material of materials) {
         const { materialId } = await ingestMaterial(material.file, {
@@ -485,7 +477,10 @@ export function FoundationForm({
           {error}
         </Notice>
       ) : building ? (
-        <Notice tone="success" title="Grounding in your material — generating the lesson">
+        <Notice
+          tone="success"
+          title={materials.length > 0 ? "Grounding in your material - generating the lesson" : "Generating the lesson"}
+        >
           {summary}
         </Notice>
       ) : showErrors ? (
