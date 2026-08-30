@@ -8,6 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default async function PreviewPage() {
-  const module = await getLessonModule();
-  return <LessonPreview module={module} />;
+  const lesson = await getLessonModule();
+  return <LessonPreview module={lesson} />;
 }
