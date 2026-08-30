@@ -6,6 +6,10 @@
  * zero-config; override with `NEXT_PUBLIC_ENGINE_URL` to point at a deployed
  * engine.
  *
+ * `NEXT_PUBLIC_API_URL` is accepted as a fallback alias so a deployment that set
+ * the engine URL under the older var name still works (without it, production
+ * silently falls back to localhost and every browser call fails cross-origin).
+ *
  * Full contract: `cuepilot-lesson-engine/CONTRACT.md`.
  */
 
@@ -14,7 +18,9 @@ function normalise(url: string | undefined): string {
   return trimmed && trimmed.length > 0 ? trimmed : "http://localhost:3001";
 }
 
-export const ENGINE_URL = normalise(process.env.NEXT_PUBLIC_ENGINE_URL);
+export const ENGINE_URL = normalise(
+  process.env.NEXT_PUBLIC_ENGINE_URL || process.env.NEXT_PUBLIC_API_URL,
+);
 
 /** Reads + uploads. `getLesson`/`listLessons` run server-side (no CORS). */
 export const contentEndpoints = {
