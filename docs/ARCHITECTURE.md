@@ -96,14 +96,19 @@ src/app/
 │  ├─ templates/           /templates
 │  ├─ artifacts/[id]/      /artifacts/[id]
 │  └─ objectives/ · agentic-plan/ · resources/ · analytics/
-└─ (editor)/               no chrome at all — full-screen takeover
-   └─ blocks/[blockId]/edit/                        Block Editor
+│  └─ blocks/[blockId]/edit/  redirect → /curriculum/flow (legacy link)
+└─ (present)/              the deck — its own theme, no planner chrome
+   ├─ present/page.tsx     /present                 deck gallery
+   └─ present/[deckId]/    /present/[deckId]        one presentation
 ```
 
 `AppShell` is `h-dvh` with `main` as the only scroller. `/curriculum/flow` opts
 `main` out of scrolling and lays out its own fixed-height panes; every other
 screen wraps its body in `<Page>` for the standard padded container. The shell
-also flips the top bar's leading action to `Preview` on the flow screen.
+also flips the top bar to lead with `Preview` on the flow screen.
+
+`(present)` has no `AppShell` at all and loads its own two fonts, so the planner
+never pays for them. Full rationale in [DECK.md](DECK.md).
 
 ## Server / client split
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MenuIcon } from "@/components/icons";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { topNav } from "@/lib/data/navigation";
 import { cn } from "@/lib/cn";
@@ -67,13 +67,19 @@ export function TopBar({ onOpenMenu, primaryAction = "save" }: TopBarProps) {
               <Button variant="outline" className="hidden sm:inline-flex">
                 Save
               </Button>
-              <Button variant="brand">Preview</Button>
+              <ButtonLink href="/present" variant="brand">
+                Preview
+              </ButtonLink>
             </>
           ) : (
             <>
-              <Button variant="ghost" className="hidden sm:inline-flex">
+              <ButtonLink
+                href="/present"
+                variant="ghost"
+                className="hidden sm:inline-flex"
+              >
                 Preview
-              </Button>
+              </ButtonLink>
               <Button variant="brand">Save</Button>
             </>
           )}

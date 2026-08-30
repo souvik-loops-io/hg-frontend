@@ -68,10 +68,14 @@ The product has one spine. Each screen hands off to the next.
   /curriculum                Setup & Planning — frame the module
   │
   ▼
-  /curriculum/flow           Lesson Flow — blocks · live preview · settings
+  /curriculum/flow           Lesson Flow — blocks · canvas · inspector
+  │                          the block editor is a MODE of this screen
   │
   ▼
-  /blocks/[blockId]/edit     Block Editor — one representation, full screen
+  /present                   Sample Presentations — the deck gallery
+  │
+  ▼
+  /present/[deckId]          The lesson as a class actually sees it
 
   Supporting:  /library · /templates · /artifacts/[id]
   Reserved:    /objectives · /agentic-plan · /resources · /analytics
@@ -89,13 +93,14 @@ hackathon/
 │  ├─ app/                 routes, grouped by which chrome they wear
 │  │  ├─ layout.tsx        <html>, font, skip link — no chrome
 │  │  ├─ (app)/            top bar + planner sidebar
-│  │  └─ (editor)/         no chrome — full-screen takeover
+│  │  └─ (present)/        the deck — its own theme, no planner chrome
 │  ├─ components/
 │  │  ├─ shell/            top bar, planner sidebar, app shell + Page
 │  │  ├─ dashboard/        weekly focus, artifact cards, create tile
-│  │  ├─ planner/          block list, student preview, settings, block editor
+│  │  ├─ planner/          block list, canvas, inspector, assistant
+│  │  ├─ deck/             presentation sections, illustrations, progress rail
 │  │  ├─ ai/               chat bubbles, composer, avatars
-│  │  ├─ ui/               button, badge, field, toggle, page header
+│  │  ├─ ui/               button, badge, notice, slider, toggle, skeleton
 │  │  └─ icons.tsx         local SVGs on a shared 24px / 1.75-stroke grid
 │  └─ lib/
 │     ├─ api/              client.ts (the seam) + endpoints.ts
@@ -118,5 +123,6 @@ Kept as separate files, meant to be edited as the product moves.
 - [Screens](docs/SCREENS.md) — every screen in flow order, and what it still needs
 - [Architecture](docs/ARCHITECTURE.md) — route groups, the seam, conventions
 - [Design system](docs/DESIGN.md) — tokens, what the colours mean, responsive rules
-# hackathon-frontend
-# hackathon-frontend
+- [Backend contract](docs/BACKEND_CONTRACT.md) — the two services, the JSON shapes, and
+  the polling protocol that stands in for sockets
+- [The deck](docs/DECK.md) — the student-facing presentation and its own theme

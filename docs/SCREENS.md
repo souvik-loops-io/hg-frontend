@@ -11,11 +11,13 @@ surfaces come after the spine.
   │                          grade · subject · topic · framework · materials
   ▼
   /curriculum/flow           Lesson Flow — the main working screen
-  │                          blocks · live student preview · block settings
+  │                          blocks · canvas · inspector
+  │                          Preview ⇄ Edit are MODES of this one screen
   ▼
-  /blocks/[blockId]/edit     Block Editor — one representation, full screen
+  /present                   Sample Presentations — the deck gallery
   │
-  └──▶ back to /curriculum/flow with the change applied
+  ▼
+  /present/[deckId]          The lesson as a class actually sees it
 
   Supporting:  /library · /templates · /artifacts/[id]
   Reserved:    /objectives · /agentic-plan · /resources · /analytics
@@ -126,60 +128,77 @@ desktop/mobile viewport toggle that narrows the frame rather than faking a devic
 chrome. The deck headline underlines its last word in amber. The selected block
 carries an amber `✎ EDITING` tab on its top edge, and a block with a
 representation shows a breathing sparkle, its status line, and an
-`Open full editor` button.
+`Open in editor` button that flips the pane into Edit mode on that block.
 
 **Right — Block Settings.** Block type as an amber pill, then title, instruction
 text and the interactive toggles — all controlled, all writing straight back to
 the workspace, so the live preview updates as you type.
 
 `Delete Block` is wired. It takes two deliberate taps: the red button swaps for
-an inline confirm naming the block, because deleting is not undoable in-session.
-On confirm the block is removed and selection moves to whichever block slides
-into its place; empty out the list entirely and the pane invites you to draft
-the first one.
+an inline confirm naming the block. On confirm the block is removed and
+selection moves to whichever block slides into its place; empty the list and the
+pane invites you to draft the first one. **Delete is undoable** — undo/redo in
+the canvas header covers every structural change.
 
-**Responsive.** Below `xl` settings becomes a right sheet behind a floating
-`Block Settings` button. Below `md` all three panes collapse to a tab strip —
-Blocks / Preview / Settings — because a three-column editor at 390px is a lie.
-Picking a block on a phone switches you to Preview, since that is what you asked
-to see.
+**Responsive.** Below `xl` the inspector becomes a right sheet behind a floating
+button. Below `md` all three panes collapse to a tab strip — Blocks / Canvas /
+Inspect — because a three-column editor at 390px is a lie. Picking a block on a
+phone switches you to the canvas, since that is what you asked to see.
 
-**Exits to:** `/blocks/[blockId]/edit`.
+**Exits to:** Edit mode on this same screen, and /present via Preview.
 **Needs:** `NEXT_PUBLIC_API_URL` for real blocks and to persist edits — nothing
 is written back yet, so a reload restores the fixture. `NEXT_PUBLIC_AI_URL` for
 real drafting.
 
 ---
 
-## 4 · `/blocks/[blockId]/edit` — Block Editor
+## 4 · Edit mode — inside `/curriculum/flow`
 
-**One representation, full screen.** No app chrome — this screen is the whole
-task.
+**The editor is a mode, not a route.** It used to be a full-screen takeover at
+`/blocks/[blockId]/edit`; that meant leaving the lesson to change one block, and
+coming back to change the next. Now `Preview` and `Edit` are tabs on the centre
+pane, and **the block rail stays live in both** — so you can work through
+several blocks in a row without ever leaving. `/blocks/[blockId]/edit` redirects
+here.
 
-**Header.** Close, `Edit Block: Fraction Number Line` in brand, then `Discard`
-and `Apply Changes`.
-
-**Left card** (sky border). A sky ruler mark, the block name, its
-`Grade 4 · Fractions` breadcrumb, and undo/redo. Inside a dashed frame: a
-breathing sparkle ring, the status in large brand type — *"Simplifying to halves
-and quarters..."* — a plain-language subtitle, and the number line itself with
-its quarter ticks.
+**Centre — the canvas.** In Edit mode the student preview is replaced by the
+selected block at size: a sky-bordered card with a ruler mark, the block type,
+and the content students will read. While the assistant is working it shows a
+breathing sparkle ring and the status in large brand type — *"Simplifying to
+halves and quarters..."*.
 
 That status string is not decoration. It is `statusLabel` on the representation,
 fed by the AI service's stage stream, and it is written for a teacher rather than
-a developer. The ring only breathes while `status` is `updating`.
+a developer.
 
-**Right card** (leaf border). "Edit this representation · Lumina AI Assistant".
-Assistant bubbles are grey with a leaf robot mark, the teacher's are sky and
-right-aligned, and a pending turn is a three-dot bubble. Pill composer with a
-brand send button, and follow-ups scoped to *this* representation —
-`Change to Decimals`, `Extend to 2`.
+**Header.** The mode tabs, the current block name, **undo / redo**, and
+`Apply Changes`. Undo/redo are present in *both* modes and cover every
+structural change — including delete.
 
-**Responsive.** Cards stack below `lg`; the header sheds `Edit Block:` and
-`Discard` below `sm`.
+**Right — the inspector.** Two tabs, always both available:
 
-**Exits to:** `/curriculum/flow` — both Close and Discard return there.
-**Needs:** `NEXT_PUBLIC_AI_URL`.
+- **Assistant** — one conversation per block, kept when you switch blocks.
+  Quick actions are scoped to what the block actually is: a representation
+  offers `Change to Decimals`, an assessment offers `Add two more questions`.
+- **Settings** — title, instruction text, interactive toggles, and
+  `Delete Block`.
+
+Edit mode opens on Assistant; Preview opens on Settings. Either is one click
+away, so editing and deleting never require leaving the editor.
+
+**What a message does.** It goes through `reviseBlock()` in
+`src/lib/ai/revise-block.ts` — the AI service when `NEXT_PUBLIC_AI_URL` is set,
+a local pass otherwise. The local pass makes one honest visible change (it puts
+your instruction on the canvas as the status) and a toast says it was drafted
+on-device rather than implying the pipeline ran.
+
+**Responsive.** Below `xl` the inspector is a right sheet behind a floating
+button. Below `md` all three panes collapse to a tab strip: Blocks / Canvas /
+Inspect.
+
+**Exits to:** `/present` via the top bar's Preview.
+**Needs:** `NEXT_PUBLIC_AI_URL` for real revision; `NEXT_PUBLIC_API_URL` to
+persist anything.
 
 ---
 
@@ -208,6 +227,12 @@ in Lesson Flow, or go back to its foundation.
 The remaining sidebar sections. Each states what it will do and names the env var
 it depends on, rather than reading as a broken link.
 
+## `/present` · `/present/[deckId]` — the deck
+
+The student-facing presentation, in its own visual system with its own layout
+and no planner chrome. Reached from the top bar.s **Preview**. Documented
+separately in [DECK.md](DECK.md).
+
 ## `404`
 
 Rendered outside every shell, so it carries no chrome. One line and a way back.
@@ -217,7 +242,9 @@ Rendered outside every shell, so it carries no chrome. One line and a way back.
 ## Adding a screen
 
 1. Decide which chrome it wears — that picks the route group: `(app)` for
-   anything inside the planner shell, `(editor)` for a full-screen takeover.
+   anything inside the planner shell, `(present)` for the deck. A new working
+   surface is usually a *mode* of an existing screen, not a new route — see
+   Edit mode above.
 2. Wrap the body in `<Page>` from `components/shell/app-shell` unless it manages
    its own height like the lesson flow does.
 3. Fetch in the page (a Server Component) through `src/lib/api/client.ts`. Add a

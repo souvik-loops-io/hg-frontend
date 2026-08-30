@@ -265,3 +265,73 @@
 .lumina-range:active::-moz-range-thumb {
   transform: scale(1.1);
 }
+
+/* ---------------------------------------------------------------------------
+   Deck theme — the student-facing presentation.
+
+   A deliberately separate visual system from the planner: warm paper, one
+   crimson accent, wide-tracked monospace labels, and a handwritten script for
+   the word that carries the idea. Scoped to `deck-*` tokens so it can never
+   leak into the planner chrome.
+--------------------------------------------------------------------------- */
+@theme {
+  --font-deck-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+  --font-deck-script: var(--font-caveat), "Segoe Script", cursive;
+
+  --color-deck-paper: #faf6f2;
+  --color-deck-shell: #f1eae2;
+  --color-deck-card: #fdfbf9;
+  --color-deck-ink: #17161a;
+  --color-deck-soft: #5c565a;
+  --color-deck-muted: #9a918c;
+  --color-deck-line: #e4dbd2;
+  --color-deck-accent: #c2142e;
+  --color-deck-accent-soft: #f6dde1;
+}
+
+@layer utilities {
+  /* Wide-tracked uppercase mono — "SAMPLE PRESENTATIONS", "BREAK THIS RULE". */
+  .deck-label {
+    font-family: var(--font-deck-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .deck-label-sm {
+    font-family: var(--font-deck-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* Dotted leader between a contents label and its rule. */
+  .deck-leader {
+    flex: 1 1 auto;
+    border-bottom: 1px dotted var(--color-deck-line);
+    transform: translateY(-0.3em);
+  }
+}
+
+@keyframes deck-scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(0.4rem);
+    opacity: 1;
+  }
+}
+
+@layer utilities {
+  .animate-scroll-hint {
+    animation: deck-scroll-hint 1.8s ease-in-out infinite;
+  }
+}
