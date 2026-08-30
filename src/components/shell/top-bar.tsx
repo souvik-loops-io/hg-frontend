@@ -32,7 +32,7 @@ export function TopBar({ onOpenMenu, primaryAction = "save" }: TopBarProps) {
           href="/"
           className="shrink-0 text-xl font-bold tracking-[-0.035em] text-brand-600 sm:text-2xl lg:text-3xl"
         >
-          Lumina Learning
+          CuePilot
         </Link>
 
         <nav aria-label="Primary" className="hidden lg:block">
