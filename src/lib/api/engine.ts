@@ -107,7 +107,7 @@ export interface RunResult {
   lessonId: string;
 }
 
-/** `POST /v1/runs`. Generate a lesson grounded in one or more materials. */
+/** `POST /v1/runs`. Generate a lesson, optionally grounded in materials. */
 export function runLesson(
   materialIds: string[],
   spec: GenerateSpec,
