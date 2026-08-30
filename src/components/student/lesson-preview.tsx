@@ -134,8 +134,8 @@ export function LessonPreview({ module }: { module: LessonModule }) {
       <header className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
         <Link href="/" className="text-lg font-extrabold tracking-[-0.04em] text-teal-800">CuePilot</Link>
         <div className="flex items-center gap-2">
-          <a href={`/curriculum/flow?lesson=${encodeURIComponent(module.id)}`} className="hidden rounded-full px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-white/70 hover:text-teal-800 sm:inline-flex">Back to editor</a>
-          <a href="/" className="rounded-full border border-white bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 backdrop-blur transition hover:bg-white hover:text-teal-800">Dashboard</a>
+          <Link href={`/curriculum/flow?lesson=${encodeURIComponent(module.id)}`} className="hidden rounded-full px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-white/70 hover:text-teal-800 sm:inline-flex">Back to editor</Link>
+          <Link href="/" className="rounded-full border border-white bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 backdrop-blur transition hover:bg-white hover:text-teal-800">Dashboard</Link>
         </div>
       </header>
       <section className="relative mx-auto max-w-4xl px-5 pb-16 pt-8 sm:px-8 sm:pt-16">
