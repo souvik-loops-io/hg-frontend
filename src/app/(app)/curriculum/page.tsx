@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FoundationForm } from "@/components/planner/foundation-form";
 import { MaterialDropzone } from "@/components/planner/material-dropzone";
+import { MaterialsProvider } from "@/components/planner/materials-context";
 import {
   DiscoveryTipCard,
   RecentTopicsCard,
@@ -25,16 +26,18 @@ export default async function SetupPage() {
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)] lg:items-start">
-        <div className="space-y-6">
-          <FoundationForm defaults={defaults} options={options}>
-            <MaterialDropzone />
-          </FoundationForm>
-        </div>
+        <MaterialsProvider>
+          <div className="space-y-6">
+            <FoundationForm defaults={defaults} options={options}>
+              <MaterialDropzone />
+            </FoundationForm>
+          </div>
 
-        <div className="space-y-6">
-          <DiscoveryTipCard tip={tip} />
-          <RecentTopicsCard topics={recentTopics} />
-        </div>
+          <div className="space-y-6">
+            <DiscoveryTipCard tip={tip} />
+            <RecentTopicsCard topics={recentTopics} />
+          </div>
+        </MaterialsProvider>
       </div>
     </Page>
   );
