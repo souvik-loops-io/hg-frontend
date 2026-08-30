@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMaterials } from "@/components/planner/materials-context";
 import { ingestMaterial, runLesson, TEACHER_ID } from "@/lib/api/engine";
+import { AgenticLoader } from "@/components/planner/agentic-loader";
 import {
   ChevronDownIcon,
   ClockIcon,
@@ -140,6 +141,7 @@ export function FoundationForm({
   const [values, setValues] = useState<FoundationDetails>(defaults);
   const [submitted, setSubmitted] = useState(false);
   const [building, setBuilding] = useState(false);
+  const [builtLessonId, setBuiltLessonId] = useState<string | null>(null);
   const { materials } = useMaterials();
   const [error, setError] = useState<string | null>(null);
 
@@ -166,6 +168,7 @@ export function FoundationForm({
     }
 
     setBuilding(true);
+    setBuiltLessonId(null);
     try {
       const board = boardForFramework(values.framework, options);
       const grade = values.gradeLevel.replace(/^grade-/, "");
@@ -195,10 +198,9 @@ export function FoundationForm({
         visualDemand: 3,
       });
 
-      // Build finished — drop the teacher straight into the student preview of
-      // the lesson they just generated. "Back to editor" (in the preview) keeps
-      // the same lesson id, so editing is one click away.
-      router.push(`/preview?lesson=${encodeURIComponent(lessonId)}`);
+      // Real lesson is ready; the agentic loader shows the transcript and
+      // navigates to the preview once its animation finishes.
+      setBuiltLessonId(lessonId);
     } catch (caught) {
       setBuilding(false);
       setError(
@@ -473,6 +475,12 @@ export function FoundationForm({
       </section>
 
       {children}
+
+      <AgenticLoader
+        open={building}
+        ready={builtLessonId}
+        onDone={() => { if (builtLessonId) router.push(`/preview?lesson=${encodeURIComponent(builtLessonId)}`); }}
+      />
 
       {/* On-page status — says what is happening, and what is missing. */}
       {error ? (

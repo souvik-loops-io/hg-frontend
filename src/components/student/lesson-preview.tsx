@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowRightIcon, CheckCircleIcon, PizzaIcon, RulerIcon } from "@/components/icons";
+import { ArrowRightIcon, CheckCircleIcon, PizzaIcon, RulerIcon, SparkleIcon } from "@/components/icons";
 import { FigureView } from "@/components/lesson/figure-view";
+import { editBlock } from "@/lib/api/engine";
 import type { Figure, LessonBlock, LessonModule } from "@/lib/types";
 
 type NumberLineFigure = Extract<Figure, { kind: "number_line" }>;
@@ -38,25 +39,18 @@ function LessonIcon({ block }: { block: LessonBlock }) {
 function GripIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" className={className} fill="currentColor" aria-hidden="true">
-      {[4, 8, 12].map((y) =>
-        [5, 11].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.4" />),
-      )}
+      {[4, 8, 12].map((y) => [5, 11].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.4" />))}
     </svg>
   );
 }
 
-/* ---------------------------------------------------------------------------
-   Drag fractions onto the number line — chips snap to their spot with
-   correct / incorrect feedback. Reads the block's number_line figure so the
-   targets always match the lesson data.
-   ------------------------------------------------------------------------- */
+/* Drag fractions onto the number line, with correct / incorrect feedback. */
 function DragDropNumberLine({ figure }: { figure: NumberLineFigure }) {
   const span = figure.max - figure.min || 1;
   const interior = useMemo(
     () => figure.marks.filter((m) => m.value !== figure.min && m.value !== figure.max),
     [figure],
   );
-  // Chips start shuffled (deterministic — reverse order, no Math.random in render).
   const [chips, setChips] = useState(() => [...interior].reverse());
   const [placed, setPlaced] = useState<Record<number, string>>({});
   const [wrong, setWrong] = useState<number | null>(null);
@@ -92,22 +86,16 @@ function DragDropNumberLine({ figure }: { figure: NumberLineFigure }) {
           <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-teal-700 shadow-sm">
             {Object.keys(placed).length} / {interior.length} placed
           </span>
-          <button type="button" onClick={reset} className="rounded-full px-3 py-1 text-xs font-bold text-slate-500 transition hover:bg-white hover:text-teal-700">
-            Reset
-          </button>
+          <button type="button" onClick={reset} className="rounded-full px-3 py-1 text-xs font-bold text-slate-500 transition hover:bg-white hover:text-teal-700">Reset</button>
         </div>
       </div>
-
-      {/* the line */}
       <div className="relative mx-4 mt-14 h-1 rounded-full bg-slate-300">
-        {/* fixed endpoints */}
         {[{ v: figure.min, l: "0" }, { v: figure.max, l: "1" }].map((e) => (
           <span key={e.l} className="absolute -top-2.5 flex -translate-x-1/2 flex-col items-center" style={{ left: pct(e.v) }}>
             <span className="h-6 w-0.5 bg-slate-500" />
             <span className="mt-1 text-xs font-bold text-slate-600">{e.l}</span>
           </span>
         ))}
-        {/* drop targets */}
         {interior.map((mark) => {
           const filled = placed[mark.value];
           const isOver = over === mark.value;
@@ -143,21 +131,12 @@ function DragDropNumberLine({ figure }: { figure: NumberLineFigure }) {
                         : "border-dashed border-slate-300 bg-white/70 text-slate-300",
                 ].join(" ")}
               >
-                {filled ? (
-                  <span className="flex items-center gap-1">
-                    <CheckCircleIcon className="size-4" />
-                    {filled}
-                  </span>
-                ) : (
-                  "?"
-                )}
+                {filled ? <span className="flex items-center gap-1"><CheckCircleIcon className="size-4" />{filled}</span> : "?"}
               </span>
             </span>
           );
         })}
       </div>
-
-      {/* chip tray */}
       <div className="mt-12 flex min-h-[3rem] flex-wrap items-center justify-center gap-2">
         {chips.length === 0 && done ? (
           <p className="animate-breathe text-center text-sm font-bold text-emerald-600">🎉 Perfect — every fraction is in its place!</p>
@@ -183,16 +162,70 @@ function DragDropNumberLine({ figure }: { figure: NumberLineFigure }) {
   );
 }
 
+/* The side drawer where the teacher types feedback for one block; on submit it
+   regenerates that block via AI. Slides in from the right. */
+function FeedbackDrawer({
+  block,
+  regenerating,
+  onClose,
+  onSubmit,
+}: {
+  block: LessonBlock | null;
+  regenerating: boolean;
+  onClose: () => void;
+  onSubmit: (feedback: string) => void;
+}) {
+  const [feedback, setFeedback] = useState("");
+  useEffect(() => setFeedback(""), [block?.id]);
+  if (!block) return null;
+
+  return (
+    <>
+      <button type="button" aria-label="Close feedback" onClick={onClose} className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm" />
+      <aside className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col gap-4 border-l border-slate-200 bg-white p-6 shadow-2xl sm:p-7">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-teal-600">Edit with AI</p>
+            <h3 className="mt-1 text-lg font-bold tracking-[-0.02em] text-slate-900">{block.title}</h3>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600" aria-label="Close">✕</button>
+        </div>
+        <p className="text-sm leading-6 text-slate-500">Tell the AI what to change about this block. It regenerates just this block — the rest of the lesson stays put.</p>
+        <textarea
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          rows={5}
+          autoFocus
+          placeholder="e.g. make it simpler, use a cricket example, add a real-world scenario, make the question harder…"
+          className="w-full flex-1 resize-none rounded-xl border border-teal-200 bg-teal-50/30 p-3 text-sm leading-6 text-slate-700 outline-none focus:border-teal-400"
+        />
+        <div className="flex items-center justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-full px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700">Cancel</button>
+          <button
+            type="button"
+            disabled={!feedback.trim() || regenerating}
+            onClick={() => onSubmit(feedback.trim())}
+            className="inline-flex items-center gap-1.5 rounded-full bg-teal-600 px-5 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-teal-700 disabled:opacity-50"
+          >
+            <SparkleIcon className="size-4" />
+            {regenerating ? "Regenerating…" : "Regenerate with AI"}
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}
+
 interface StudentBlockProps {
   block: LessonBlock;
   index: number;
   total: number;
   nextBlockId?: string;
-  editing: boolean;
+  feedbackOpen: boolean;
+  regenerating: boolean;
+  onToggleFeedback: () => void;
   dragging: boolean;
   dropTarget: boolean;
-  onToggleEdit: () => void;
-  onChange: (patch: Partial<LessonBlock>) => void;
   onDragStartHandle: (e: React.DragEvent) => void;
   onDragOverCard: (e: React.DragEvent) => void;
   onDropCard: (e: React.DragEvent) => void;
@@ -200,7 +233,7 @@ interface StudentBlockProps {
 }
 
 function StudentBlock(props: StudentBlockProps) {
-  const { block, index, total, nextBlockId, editing, dragging, dropTarget, onChange } = props;
+  const { block, index, total, nextBlockId, feedbackOpen, regenerating, dragging, dropTarget } = props;
   const numberLine = block.figure?.kind === "number_line" ? (block.figure as NumberLineFigure) : null;
 
   return (
@@ -211,10 +244,10 @@ function StudentBlock(props: StudentBlockProps) {
         "relative rounded-[2rem] border bg-white p-6 shadow-[0_16px_45px_rgba(15,23,42,0.08)] transition-all sm:p-8",
         dragging ? "opacity-40" : "opacity-100",
         dropTarget ? "border-teal-400 ring-2 ring-teal-300" : "border-slate-100",
+        regenerating ? "animate-breathe" : "",
       ].join(" ")}
     >
       <div className="flex items-start gap-3">
-        {/* drag handle — reorders the block */}
         <button
           type="button"
           draggable
@@ -230,51 +263,31 @@ function StudentBlock(props: StudentBlockProps) {
           <LessonIcon block={block} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
-            {block.kind} · Lesson {index + 1} of {total}
-          </p>
-          {editing ? (
-            <input
-              value={block.title}
-              onChange={(e) => onChange({ title: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-teal-200 bg-teal-50/40 px-2 py-1 text-2xl font-bold tracking-[-0.03em] text-slate-900 outline-none focus:border-teal-400"
-            />
-          ) : (
-            <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] text-slate-900">{block.title}</h2>
-          )}
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{block.kind} · Lesson {index + 1} of {total}</p>
+          <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] text-slate-900">{block.title}</h2>
         </div>
-        {/* edit toggle */}
         <button
           type="button"
-          onClick={props.onToggleEdit}
+          onClick={props.onToggleFeedback}
+          disabled={regenerating}
           className={[
-            "shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition",
-            editing ? "bg-teal-600 text-white shadow-sm hover:bg-teal-700" : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700",
+            "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition disabled:opacity-50",
+            feedbackOpen ? "bg-teal-600 text-white shadow-sm hover:bg-teal-700" : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700",
           ].join(" ")}
         >
-          {editing ? "Done" : "Edit"}
+          <SparkleIcon className="size-3.5" />
+          {regenerating ? "Regenerating…" : "Edit with AI"}
         </button>
       </div>
 
-      {editing ? (
-        <textarea
-          value={block.instruction}
-          onChange={(e) => onChange({ instruction: e.target.value })}
-          rows={3}
-          className="mt-4 w-full resize-y rounded-xl border border-teal-200 bg-teal-50/30 p-3 text-base leading-7 text-slate-700 outline-none focus:border-teal-400"
-        />
-      ) : (
-        <div className="student-markdown mt-4">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{block.instruction}</ReactMarkdown>
-        </div>
-      )}
+      <div className="student-markdown mt-4">
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{block.instruction}</ReactMarkdown>
+      </div>
 
       {block.body && block.body.length > 0 ? (
         <div className="student-markdown mt-4 space-y-3">
           {block.body.map((paragraph, paragraphIndex) => (
-            <ReactMarkdown key={paragraphIndex} remarkPlugins={[remarkGfm]} components={markdownComponents}>
-              {paragraph}
-            </ReactMarkdown>
+            <ReactMarkdown key={paragraphIndex} remarkPlugins={[remarkGfm]} components={markdownComponents}>{paragraph}</ReactMarkdown>
           ))}
         </div>
       ) : null}
@@ -300,7 +313,9 @@ function StudentBlock(props: StudentBlockProps) {
 export function LessonPreview({ module }: { module: LessonModule }) {
   const [blocks, setBlocks] = useState<LessonBlock[]>(module.blocks);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [feedbackId, setFeedbackId] = useState<string | null>(null);
+  const [regenId, setRegenId] = useState<string | null>(null);
+  const [banner, setBanner] = useState<string | null>(null);
   const dragIndex = useRef<number | null>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
@@ -312,9 +327,7 @@ export function LessonPreview({ module }: { module: LessonModule }) {
       const element = document.getElementById(block.id);
       if (!element) return null;
       const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry?.isIntersecting) setActiveIndex(index);
-        },
+        ([entry]) => { if (entry?.isIntersecting) setActiveIndex(index); },
         { rootMargin: "-28% 0px -62% 0px", threshold: 0 },
       );
       observer.observe(element);
@@ -322,10 +335,6 @@ export function LessonPreview({ module }: { module: LessonModule }) {
     });
     return () => observers.forEach((observer) => observer?.disconnect());
   }, [blocks]);
-
-  function updateBlock(index: number, patch: Partial<LessonBlock>) {
-    setBlocks((bs) => bs.map((b, i) => (i === index ? { ...b, ...patch } : b)));
-  }
 
   function moveBlock(from: number, to: number) {
     if (from === to) return;
@@ -337,6 +346,22 @@ export function LessonPreview({ module }: { module: LessonModule }) {
       next.splice(to, 0, moved);
       return next;
     });
+  }
+
+  // Feedback → the block regenerates via AI (backend editBlock, Path A).
+  async function regenerate(blockId: string, feedback: string) {
+    setFeedbackId(null);
+    setRegenId(blockId);
+    setBanner(null);
+    try {
+      const { module: updated } = await editBlock(module.id, blockId, { instruction: feedback });
+      setBlocks(updated.blocks);
+      setBanner("Block regenerated from your feedback.");
+    } catch (err) {
+      setBanner(err instanceof Error ? `Couldn't regenerate: ${err.message}` : "Couldn't regenerate that block.");
+    } finally {
+      setRegenId(null);
+    }
   }
 
   return (
@@ -355,19 +380,17 @@ export function LessonPreview({ module }: { module: LessonModule }) {
           <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.06em] text-slate-900 sm:text-6xl">{module.headline}</h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">{module.subheadline}</p>
           <p className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-white/70 px-4 py-2 text-xs font-semibold text-teal-700 shadow-sm">
-            ✨ Live &amp; interactive — drag the grip to reorder, drag fractions onto the line, tap <span className="rounded bg-slate-100 px-1.5 py-0.5">Edit</span> to change any block
+            ✨ Interactive — drag the grip to reorder, drag fractions onto the line, or hit <span className="rounded bg-slate-100 px-1.5 py-0.5">Edit with AI</span> to regenerate a block from your feedback
           </p>
         </div>
+        {banner ? (
+          <p className="mx-auto mt-4 max-w-xl rounded-full bg-white/80 px-4 py-2 text-center text-sm font-medium text-teal-700 shadow-sm">{banner}</p>
+        ) : null}
         <nav className="fixed right-4 top-1/2 z-30 -translate-y-1/2 sm:right-7" aria-label="Lesson progress">
           <div className="flex flex-col items-center gap-2 rounded-full border border-white/80 bg-white/90 px-2.5 py-3 shadow-[0_8px_24px_rgba(15,118,110,0.12)] backdrop-blur">
             {blocks.map((block, index) => (
-              <a
-                key={block.id}
-                href={`#${block.id}`}
-                aria-label={`Go to ${block.title}`}
-                aria-current={index === activeIndex ? "step" : undefined}
-                className={`size-3 rounded-full transition-all duration-300 ${index === activeIndex ? "scale-125 bg-teal-600 shadow-[0_0_0_4px_rgba(13,148,136,0.14)]" : index < activeIndex ? "bg-teal-300" : "bg-slate-200 hover:bg-slate-300"}`}
-              />
+              <a key={block.id} href={`#${block.id}`} aria-label={`Go to ${block.title}`} aria-current={index === activeIndex ? "step" : undefined}
+                className={`size-3 rounded-full transition-all duration-300 ${index === activeIndex ? "scale-125 bg-teal-600 shadow-[0_0_0_4px_rgba(13,148,136,0.14)]" : index < activeIndex ? "bg-teal-300" : "bg-slate-200 hover:bg-slate-300"}`} />
             ))}
           </div>
         </nav>
@@ -379,11 +402,11 @@ export function LessonPreview({ module }: { module: LessonModule }) {
                 index={index}
                 total={blocks.length}
                 nextBlockId={blocks[index + 1]?.id}
-                editing={editingId === block.id}
+                feedbackOpen={feedbackId === block.id}
+                regenerating={regenId === block.id}
+                onToggleFeedback={() => setFeedbackId((id) => (id === block.id ? null : block.id))}
                 dragging={draggingIndex === index}
                 dropTarget={dropIndex === index && draggingIndex !== index}
-                onToggleEdit={() => setEditingId((id) => (id === block.id ? null : block.id))}
-                onChange={(patch) => updateBlock(index, patch)}
                 onDragStartHandle={(e) => {
                   dragIndex.current = index;
                   setDraggingIndex(index);
@@ -417,6 +440,12 @@ export function LessonPreview({ module }: { module: LessonModule }) {
         </div>
         <div className="mt-8 flex items-center justify-center gap-2 text-sm font-medium text-slate-500"><CheckCircleIcon className="size-5 text-emerald-500" /> Learn at your own pace</div>
       </section>
+      <FeedbackDrawer
+        block={blocks.find((b) => b.id === feedbackId) ?? null}
+        regenerating={regenId !== null}
+        onClose={() => setFeedbackId(null)}
+        onSubmit={(fb) => { if (feedbackId) regenerate(feedbackId, fb); }}
+      />
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { FlowWorkspace } from "@/components/planner/flow-workspace";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LiveWorkspace } from "@/components/planner/live-workspace";
-import { getLessonModule } from "@/lib/api/client";
 import { fetchLessonModule } from "@/lib/api/engine";
 
 export const metadata: Metadata = { title: "Lesson Flow" };
@@ -9,11 +9,10 @@ export const metadata: Metadata = { title: "Lesson Flow" };
 /**
  * The lesson editor.
  *
- * With `?lesson=<id>` (set by the Setup screen after a run) we load that real
- * engine lesson server-side — no CORS, and the whole `LessonModule` is fetched
- * in one round trip — and hand it to the engine-backed `LiveWorkspace`. Without
- * an id, or if the engine is unreachable, we fall back to the fixture module so
- * the screen is never a dead end.
+ * Requires `?lesson=<id>` (set by Build). We load that real engine lesson
+ * server-side and hand it to the engine-backed LiveWorkspace. No fixture
+ * fallback — without an id we send the teacher to build one, and if the lesson
+ * can't be loaded we say so plainly rather than showing unrelated demo content.
  */
 export default async function LessonFlowPage({
   searchParams,
@@ -21,16 +20,28 @@ export default async function LessonFlowPage({
   searchParams: Promise<{ lesson?: string }>;
 }) {
   const { lesson } = await searchParams;
+  if (!lesson) redirect("/curriculum");
 
-  if (lesson) {
-    try {
-      const engineLesson = await fetchLessonModule(lesson);
-      if (engineLesson) return <LiveWorkspace module={engineLesson} />;
-    } catch {
-      // Engine unreachable — fall through to the fixture rather than erroring.
-    }
+  let module = null;
+  try {
+    module = await fetchLessonModule(lesson);
+  } catch {
+    module = null;
   }
 
-  const lessonModule = await getLessonModule();
-  return <FlowWorkspace module={lessonModule} />;
+  if (!module) {
+    return (
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center text-ink-soft">
+        <h1 className="text-2xl font-bold tracking-[-0.03em] text-ink">Couldn&apos;t load this lesson</h1>
+        <p className="max-w-md">
+          The lesson engine didn&apos;t return <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">{lesson}</code>. Make sure the engine is running, then build a lesson.
+        </p>
+        <Link href="/curriculum" className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-paper transition hover:bg-brand-700">
+          Build a lesson
+        </Link>
+      </main>
+    );
+  }
+
+  return <LiveWorkspace module={module} />;
 }

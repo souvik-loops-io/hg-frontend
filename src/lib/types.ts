@@ -172,12 +172,20 @@ export interface ChecklistFigure {
   items: string[];
 }
 
+/** A click-to-match game — pair each left item with its right partner. */
+export interface MatchGameFigure {
+  kind: "match_game";
+  prompt?: string;
+  pairs: { left: string; right: string }[];
+}
+
 export type Figure =
   | NumberLineFigure
   | BarsFigure
   | FlowFigure
   | McqFigure
-  | ChecklistFigure;
+  | ChecklistFigure
+  | MatchGameFigure;
 
 export interface LessonModule {
   id: string;
