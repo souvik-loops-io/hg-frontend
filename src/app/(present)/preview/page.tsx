@@ -5,7 +5,7 @@ import { fetchLessonModule } from "@/lib/api/engine";
 
 export const metadata: Metadata = {
   title: "Student Preview",
-  description: "A student-facing CuePilot lesson preview.",
+  description: "A student-facing Chalk lesson preview.",
 };
 
 /**

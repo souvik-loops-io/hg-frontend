@@ -11,8 +11,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "CuePilot — Pedagogical Builder",
-    template: "%s · CuePilot",
+    default: "Chalk — Pedagogical Builder",
+    template: "%s · Chalk",
   },
   description:
     "Plan, build and adjust lessons from a library of pedagogical blocks and teaching representations.",
