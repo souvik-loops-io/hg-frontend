@@ -1,13 +1,13 @@
-import { getRun, isAiConfigured, startRun } from "@/lib/api/client";
 import type { BlockKind, LessonBlock } from "@/lib/types";
 
 /**
- * Turns a typed request ("a quick exit ticket on comparing fractions") into a
- * lesson block.
+ * Drafts a lesson block from a typed request ("a quick exit ticket on comparing
+ * fractions"), entirely on-device.
  *
- * Goes through the AI service when `NEXT_PUBLIC_AI_URL` is set. With no service
- * — or if the run fails — it drafts locally so the flow still works end to end.
- * The result says which path produced it, and the UI tells the teacher.
+ * This is the *fixture-mode* fallback used when the flow screen is opened
+ * without a real engine lesson. When a real lesson is loaded, adding a block
+ * goes through the Lesson Engine's `/edit-lesson` path instead (see
+ * `LiveWorkspace`), so this never runs.
  */
 
 export interface DraftBlockInput {
@@ -17,12 +17,9 @@ export interface DraftBlockInput {
 
 export interface DraftResult {
   block: LessonBlock;
-  source: "ai" | "local";
+  /** Always "local" here — kept so the UI can stay honest about the source. */
+  source: "local";
 }
-
-/* -------------------------------------------------------------------------
-   Local drafting
-   ------------------------------------------------------------------------- */
 
 /** Longest-match-wins keyword hints, most specific kind first. */
 const KIND_HINTS: [BlockKind, string[]][] = [
@@ -89,45 +86,9 @@ function newBlockId(): string {
   }`;
 }
 
-/* -------------------------------------------------------------------------
-   Pipeline path
-   ------------------------------------------------------------------------- */
-
-const POLL_INTERVAL_MS = 800;
-const POLL_TIMEOUT_MS = 45_000;
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Polls a run to completion and returns the block it produced. */
-async function awaitRunBlock(runId: string): Promise<LessonBlock | null> {
-  const deadline = Date.now() + POLL_TIMEOUT_MS;
-
-  while (Date.now() < deadline) {
-    const run = await getRun(runId);
-    if (run.status === "done") return run.block ?? null;
-    if (run.status === "failed") return null;
-    await sleep(POLL_INTERVAL_MS);
-  }
-
-  return null;
-}
-
 export async function draftBlock(input: DraftBlockInput): Promise<DraftResult> {
-  if (isAiConfigured) {
-    try {
-      const handle = await startRun({
-        intent: "add-block",
-        moduleId: input.moduleId,
-        instruction: input.prompt,
-      });
-      const block = await awaitRunBlock(handle.runId);
-      if (block) return { block, source: "ai" };
-      console.error("[lumina] run produced no block, drafting locally.");
-    } catch (error) {
-      console.error("[lumina] add-block run failed, drafting locally.", error);
-    }
-  }
-
   // A visible beat, so the drafting state reads as work rather than a glitch.
   await sleep(650);
   return { block: draftLocally(input), source: "local" };

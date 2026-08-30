@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMaterials } from "@/components/planner/materials-context";
+import { ingestMaterial, runLesson, TEACHER_ID } from "@/lib/api/engine";
 import {
   ChevronDownIcon,
   ClockIcon,
@@ -28,6 +30,22 @@ const DIFFICULTY_LABELS = [
 ] as const;
 
 const DURATION_PRESETS = [15, 30, 45, 60];
+
+/** The engine speaks board names; the form speaks framework ids. */
+const FRAMEWORK_TO_BOARD: Record<string, string> = {
+  ccss: "Common Core",
+  ncert: "CBSE",
+  "national-curriculum": "National Curriculum",
+  "ib-pyp": "IB PYP",
+};
+
+function boardForFramework(value: string, options: FoundationOptions): string {
+  return (
+    FRAMEWORK_TO_BOARD[value] ??
+    options.frameworks.find((option) => option.value === value)?.label ??
+    value
+  );
+}
 
 /** Every field is required; this drives both validation and the error list. */
 type FieldName = keyof FoundationDetails;
@@ -122,6 +140,8 @@ export function FoundationForm({
   const [values, setValues] = useState<FoundationDetails>(defaults);
   const [submitted, setSubmitted] = useState(false);
   const [building, setBuilding] = useState(false);
+  const { materials } = useMaterials();
+  const [error, setError] = useState<string | null>(null);
 
   const errors = useMemo(() => validate(values), [values]);
   const errorList = Object.entries(errors) as [FieldName, string][];
@@ -135,17 +155,63 @@ export function FoundationForm({
     document.getElementById(name)?.focus();
   }
 
-  function onSubmit(event: React.FormEvent) {
+  async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSubmitted(true);
+    setError(null);
 
     if (errorList.length > 0) {
       focusField(errorList[0]![0]);
       return;
     }
 
+    // The engine grounds every lesson in an uploaded material — no upload, no run.
+    if (materials.length === 0) {
+      setError(
+        "Upload at least one teaching material — every lesson is grounded in what you provide.",
+      );
+      return;
+    }
+
     setBuilding(true);
-    router.push("/curriculum/flow");
+    try {
+      const board = boardForFramework(values.framework, options);
+      const grade = values.gradeLevel.replace(/^grade-/, "");
+      const subjectLabel =
+        options.subjects.find((option) => option.value === values.subject)
+          ?.label ?? values.subject;
+
+      // Ingest each material first, collecting the ids the lesson is grounded in.
+      const materialIds: string[] = [];
+      for (const material of materials) {
+        const { materialId } = await ingestMaterial(material.file, {
+          teacherId: TEACHER_ID,
+          subject: subjectLabel,
+          board,
+          grade,
+        });
+        materialIds.push(materialId);
+      }
+
+      const { lessonId } = await runLesson(materialIds, {
+        board,
+        grade,
+        subject: subjectLabel,
+        topic: values.topicFocus.trim(),
+        durationMins: values.durationMinutes,
+        defaultComplexity: values.difficulty,
+        visualDemand: 3,
+      });
+
+      router.push(`/curriculum/flow?lesson=${encodeURIComponent(lessonId)}`);
+    } catch (caught) {
+      setBuilding(false);
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Could not reach the lesson engine. Is it running on port 3001?",
+      );
+    }
   }
 
   const difficultyLabel =
@@ -414,8 +480,12 @@ export function FoundationForm({
       {children}
 
       {/* On-page status — says what is happening, and what is missing. */}
-      {building ? (
-        <Notice tone="success" title="Foundation set — building your lesson flow">
+      {error ? (
+        <Notice tone="error" title="Couldn't build the lesson">
+          {error}
+        </Notice>
+      ) : building ? (
+        <Notice tone="success" title="Grounding in your material — generating the lesson">
           {summary}
         </Notice>
       ) : showErrors ? (

@@ -1,27 +1,25 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { UploadFileIcon } from "@/components/icons";
+import { CloseIcon, UploadFileIcon } from "@/components/icons";
+import { useMaterials } from "@/components/planner/materials-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
 /**
- * Drop target for worksheets and reference images.
+ * Drop target for the teaching material a lesson is grounded in.
  *
- * Files are held in component state only — uploading them needs a real
- * endpoint (`NEXT_PUBLIC_API_URL`), so nothing leaves the browser yet.
+ * Files land in the shared `MaterialsProvider` as real `File` objects; the
+ * foundation form ingests them (`/ingest`) at submit, then generates. The
+ * engine accepts `.txt`, `.md` and `.pdf`.
  */
 export function MaterialDropzone() {
+  const { materials, addFiles, removeFile } = useMaterials();
   const [isOver, setIsOver] = useState(false);
-  const [files, setFiles] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function accept(list: FileList | null) {
-    if (!list?.length) return;
-    setFiles((current) => [
-      ...current,
-      ...Array.from(list).map((file) => file.name),
-    ]);
+    if (list?.length) addFiles(list);
   }
 
   return (
@@ -54,14 +52,15 @@ export function MaterialDropzone() {
         Drag and drop materials here
       </h2>
       <p className="mx-auto mt-2 max-w-sm text-[0.9375rem] leading-relaxed text-ink-soft">
-        Upload worksheets, reference images, or previous lesson plans to inform
-        your new module.
+        Every lesson is grounded in what you upload. Add a worksheet, chapter or
+        past plan — <span className="font-medium text-ink">.txt, .md or .pdf</span>.
       </p>
 
       <input
         ref={inputRef}
         type="file"
         multiple
+        accept=".txt,.md,.pdf"
         className="sr-only"
         aria-label="Choose materials to upload"
         onChange={(event) => accept(event.target.files)}
@@ -74,14 +73,22 @@ export function MaterialDropzone() {
         Browse Files
       </Button>
 
-      {files.length > 0 ? (
+      {materials.length > 0 ? (
         <ul className="mx-auto mt-6 flex max-w-md flex-wrap justify-center gap-2">
-          {files.map((name) => (
+          {materials.map((material) => (
             <li
-              key={name}
-              className="rounded-field bg-surface px-3 py-1.5 text-[0.8125rem] text-ink-soft"
+              key={material.name}
+              className="flex items-center gap-1.5 rounded-field bg-surface px-3 py-1.5 text-[0.8125rem] text-ink-soft"
             >
-              {name}
+              <span className="max-w-[14rem] truncate">{material.name}</span>
+              <button
+                type="button"
+                aria-label={`Remove ${material.name}`}
+                onClick={() => removeFile(material.name)}
+                className="text-ink-muted transition-colors hover:text-danger-500"
+              >
+                <CloseIcon className="size-3.5" />
+              </button>
             </li>
           ))}
         </ul>
