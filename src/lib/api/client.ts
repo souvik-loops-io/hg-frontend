@@ -95,10 +95,10 @@ async function request<T>(
  * the fixture. A configured-but-failing service also falls back rather than
  * blanking the page — a cold API should never cost you the screen.
  */
-async function readContent<T>(path: string, fixture: T): Promise<T> {
+async function readContent<T>(path: string, fixture: T, revalidate = 30): Promise<T> {
   if (!isApiConfigured) return fixture;
   try {
-    return await request<T>(API_URL, path);
+    return await request<T>(API_URL, path, { revalidate });
   } catch (error) {
     console.error("[lumina] content request failed, using fixtures.", error);
     return fixture;
@@ -149,7 +149,8 @@ export function getSetupData(): Promise<SetupContext> {
    ------------------------------------------------------------------------- */
 
 export function getLessonModule(): Promise<LessonModule> {
-  return readContent(contentEndpoints.modules.current, lessonModule);
+  // A student preview must show newly returned blocks even while the lesson is still building.
+  return readContent(contentEndpoints.modules.current, lessonModule, 0);
 }
 
 /* -------------------------------------------------------------------------

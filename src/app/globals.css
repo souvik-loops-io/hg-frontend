@@ -330,6 +330,32 @@
   }
 }
 
+/* Standalone student preview: one calm entrance, then no competing motion. */
+@keyframes preview-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.preview-reveal {
+  animation: preview-reveal 520ms cubic-bezier(0.2, 0.75, 0.3, 1) both;
+}
+
+/* The student preview uses its progress rail instead of browser scrollbar chrome. */
+.preview-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.preview-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @layer utilities {
   .animate-scroll-hint {
     animation: deck-scroll-hint 1.8s ease-in-out infinite;

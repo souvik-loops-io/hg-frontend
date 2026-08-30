@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   MonitorIcon,
   PhoneIcon,
@@ -95,6 +96,16 @@ export function CenterPane({
             ? `Editing · ${activeBlock?.title ?? "no block"}`
             : "Live student preview"}
         </p>
+
+        {!isEditing ? (
+          <Link
+            href="/preview"
+            target="_blank"
+            className="hidden rounded-field border border-line px-3 py-1.5 text-[0.75rem] font-semibold text-brand-600 transition-colors hover:bg-brand-50 sm:inline-flex"
+          >
+            Open full preview
+          </Link>
+        ) : null}
 
         <div className="flex shrink-0 items-center gap-1">
           <IconButton

@@ -84,9 +84,12 @@ export interface LessonBlock {
   id: string;
   kind: BlockKind;
   title: string;
+  /** Lets the student preview show blocks as soon as they are returned. */
+  status?: "queued" | "processing" | "generating" | "ready" | "failed" | "cancelled";
   /** One line under the title in the block list. */
   summary: string;
   /** Shown to students in the live preview. */
+  /** Student-facing Markdown. It may arrive while the overall lesson is incomplete. */
   instruction: string;
   /** Only meaningful when `kind` is "interactive". */
   settings?: BlockSettings;
