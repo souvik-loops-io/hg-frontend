@@ -8,8 +8,8 @@ import { ArrowRightIcon } from "@/components/icons";
  */
 
 const SAMPLES = [
-  { href: "/preview", title: "The Pizza Problem", meta: "Math · Grade 4" },
-  { href: "/preview?sample=tectonic", title: "Tectonic Plates", meta: "Science · Grade 6" },
+  { href: "/preview", title: "Tectonic Plates", meta: "Science · Grade 6" },
+  { href: "/preview?sample=pizza", title: "The Pizza Problem", meta: "Math · Grade 4" },
 ];
 
 export function SampleLessonCard() {
