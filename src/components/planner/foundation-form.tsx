@@ -195,7 +195,10 @@ export function FoundationForm({
         visualDemand: 3,
       });
 
-      router.push(`/curriculum/flow?lesson=${encodeURIComponent(lessonId)}`);
+      // Build finished — drop the teacher straight into the student preview of
+      // the lesson they just generated. "Back to editor" (in the preview) keeps
+      // the same lesson id, so editing is one click away.
+      router.push(`/preview?lesson=${encodeURIComponent(lessonId)}`);
     } catch (caught) {
       setBuilding(false);
       setError(

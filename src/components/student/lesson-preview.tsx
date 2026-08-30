@@ -5,6 +5,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowRightIcon, CheckCircleIcon, PizzaIcon, RulerIcon } from "@/components/icons";
+import { FigureView } from "@/components/lesson/figure-view";
 import type { LessonBlock, LessonModule } from "@/lib/types";
 
 const markdownComponents = {
@@ -85,7 +86,22 @@ function StudentBlock({ block, index, nextBlockId }: { block: LessonBlock; index
       </div>
       <div className="student-markdown mt-4"><ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{block.instruction}</ReactMarkdown></div>
       {isBuilding ? <p className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">More content for this block is still being prepared. You can continue with the available lesson below.</p> : null}
-      {block.kind === "interactive" ? <NumberLine /> : null}
+      {block.body && block.body.length > 0 ? (
+        <div className="student-markdown mt-4 space-y-3">
+          {block.body.map((paragraph, paragraphIndex) => (
+            <ReactMarkdown key={paragraphIndex} remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {paragraph}
+            </ReactMarkdown>
+          ))}
+        </div>
+      ) : null}
+      {block.figure ? (
+        <div className="mt-6 rounded-3xl border border-slate-100 bg-slate-50/60 p-5 sm:p-6">
+          <FigureView figure={block.figure} />
+        </div>
+      ) : block.kind === "interactive" ? (
+        <NumberLine />
+      ) : null}
       {nextBlockId ? <a href={`#${nextBlockId}`} className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-teal-700/20 transition hover:-translate-y-0.5 hover:bg-teal-800"><span>Keep learning</span><ArrowRightIcon className="size-4" /></a> : null}
     </article>
   );
@@ -118,8 +134,8 @@ export function LessonPreview({ module }: { module: LessonModule }) {
       <header className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
         <Link href="/" className="text-lg font-extrabold tracking-[-0.04em] text-teal-800">CuePilot</Link>
         <div className="flex items-center gap-2">
-          <Link href="/curriculum/flow" className="hidden rounded-full px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-white/70 hover:text-teal-800 sm:inline-flex">Back to editor</Link>
-          <Link href="/" className="rounded-full border border-white bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 backdrop-blur transition hover:bg-white hover:text-teal-800">Dashboard</Link>
+          <a href={`/curriculum/flow?lesson=${encodeURIComponent(module.id)}`} className="hidden rounded-full px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-white/70 hover:text-teal-800 sm:inline-flex">Back to editor</a>
+          <a href="/" className="rounded-full border border-white bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 backdrop-blur transition hover:bg-white hover:text-teal-800">Dashboard</a>
         </div>
       </header>
       <section className="relative mx-auto max-w-4xl px-5 pb-16 pt-8 sm:px-8 sm:pt-16">

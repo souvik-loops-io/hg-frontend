@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { MenuIcon } from "@/components/icons";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { usePathname, useRouter } from "next/navigation";
+import { CheckCircleIcon, MenuIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { topNav } from "@/lib/data/navigation";
 import { cn } from "@/lib/cn";
@@ -19,7 +19,19 @@ interface TopBarProps {
 
 export function TopBar({ onOpenMenu, primaryAction = "save" }: TopBarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const previewLeads = primaryAction === "preview";
+
+  // Preview the lesson currently open in the editor. The lesson id lives in the
+  // flow URL's `?lesson=` — read it at click time so Preview always targets the
+  // real lesson (falling back to the demo module when there isn't one).
+  function openPreview() {
+    const lessonId =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("lesson")
+        : null;
+    router.push(lessonId ? `/preview?lesson=${encodeURIComponent(lessonId)}` : "/preview");
+  }
 
   return (
     <header className="shrink-0 border-b border-line bg-canvas">
@@ -64,22 +76,29 @@ export function TopBar({ onOpenMenu, primaryAction = "save" }: TopBarProps) {
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
           {previewLeads ? (
             <>
-              <Button variant="outline" className="hidden sm:inline-flex">
-                Save
-              </Button>
-              <ButtonLink href="/present" variant="brand">
+              {/* Edits persist to the engine as you make them — so this reports
+                  state, it isn't a button that could silently do nothing. */}
+              <span
+                role="status"
+                title="Every edit is saved to the lesson engine automatically."
+                className="hidden items-center gap-1.5 rounded-field bg-leaf-100 px-3 py-2 text-[0.8125rem] font-semibold text-leaf-600 sm:inline-flex"
+              >
+                <CheckCircleIcon className="size-4" />
+                Auto-saved
+              </span>
+              <Button variant="brand" onClick={openPreview}>
                 Preview
-              </ButtonLink>
+              </Button>
             </>
           ) : (
             <>
-              <ButtonLink
-                href="/present"
+              <Button
                 variant="ghost"
+                onClick={openPreview}
                 className="hidden sm:inline-flex"
               >
                 Preview
-              </ButtonLink>
+              </Button>
               <Button variant="brand">Save</Button>
             </>
           )}
