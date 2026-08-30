@@ -20,7 +20,7 @@ export const lessonModule: LessonModule = {
       title: "The Pizza Problem",
       summary: "Real-world intro to sharing.",
       instruction:
-        "Four friends want to share one large pizza equally. How much of the pizza does each friend get?",
+        "Four friends want to share **one large pizza** equally. How much of the pizza does each friend get?\n\n- Draw the pizza\n- Split it into equal pieces\n- Explain your answer",
     },
     {
       id: "numerator-denominator",
@@ -28,7 +28,7 @@ export const lessonModule: LessonModule = {
       title: "Numerator & Denominator",
       summary: "Core vocabulary definitions.",
       instruction:
-        "The bottom number counts the equal pieces. The top number counts how many we took.",
+        "The **bottom number** counts the equal pieces. The **top number** counts how many we took.\n\n> A fraction tells us about equal parts of a whole.",
     },
     {
       id: "explore-number-line",
