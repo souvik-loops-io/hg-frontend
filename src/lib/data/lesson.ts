@@ -133,6 +133,135 @@ export const lessonModule: LessonModule = {
  * Each block gets its own thread, so switching blocks inside the editor keeps
  * the conversation you were having about each one.
  */
+/**
+ * A second hand-authored sample — a Grade 6 science lesson on tectonic plates,
+ * exercising the same figure kinds as the Pizza demo. Reached via
+ * `/preview?sample=tectonic`.
+ */
+export const tectonicModule: LessonModule = {
+  id: "demo-tectonic-plates",
+  title: "Tectonic Plates: The Restless Earth",
+  headline: "The Restless Earth 🌍",
+  subheadline: "The ground under your feet is a giant, slow-moving puzzle.",
+  grade: "Grade 6",
+  subject: "Science",
+  durationMinutes: 40,
+  timeNote: "Fits ~39 of 40 min",
+  blocks: [
+    {
+      id: "tec-hook",
+      kind: "hook",
+      title: "The Ground Is Moving",
+      summary: "A hook: the Earth isn't as solid as it feels.",
+      instruction: "Right now, without you feeling a thing, the continent you're standing on is drifting — about as fast as your fingernails grow.",
+      body: [
+        "It feels ridiculous: the ground is the very definition of \"solid and still.\" But 250 million years ago, all the continents were squished into one giant landmass called Pangaea. They've been sliding apart ever since.",
+        "What moves them? And why do the edges where they meet give us the tallest mountains, the deepest trenches, and the biggest earthquakes? That's what tectonic plates explain.",
+      ],
+    },
+    {
+      id: "tec-concept",
+      kind: "concept",
+      title: "Earth's Cracked Shell",
+      summary: "The core idea: plates float on the mantle.",
+      instruction: "Earth's hard outer shell is broken into huge slabs called plates.",
+      body: [
+        "Earth isn't solid all the way down. Its thin, rigid outer shell (the **lithosphere**) is cracked into about a dozen giant **plates**.",
+        "These plates float on the **mantle** — hot, slowly-flowing rock beneath them. Heat from deep inside Earth churns the mantle, and that churning drags the plates along.",
+        "All the action happens at **plate boundaries** — the edges where two plates meet. There are three ways they can move: apart, together, or past each other.",
+      ],
+    },
+    {
+      id: "tec-flow",
+      kind: "interactive",
+      title: "How a Mountain Range Is Born",
+      summary: "The steps of a convergent collision.",
+      instruction: "When two continental plates push into each other, follow what happens — tap each step.",
+      figure: {
+        kind: "flow",
+        steps: [
+          { title: "Two plates approach", text: "Mantle currents drag two continental plates slowly toward each other — a few centimetres a year." },
+          { title: "The crust collides", text: "Neither plate is dense enough to sink, so they crumple where they meet — like two rugs shoved together." },
+          { title: "The land buckles up", text: "The crushed crust folds and stacks, pushing rock upward into towering peaks." },
+          { title: "A mountain range rises", text: "Over millions of years this builds ranges like the Himalayas — still growing as India pushes into Asia." },
+        ],
+      },
+    },
+    {
+      id: "tec-mcq",
+      kind: "assessment",
+      title: "Name That Boundary",
+      summary: "One question on boundary types.",
+      instruction: "Two plates grind sideways past each other, neither making nor destroying crust. What kind of boundary is it?",
+      figure: {
+        kind: "mcq",
+        question: "Two plates slide horizontally past each other. What is this boundary called?",
+        options: ["Convergent (colliding)", "Divergent (spreading)", "Transform (sliding)", "Subduction zone"],
+        answerIndex: 2,
+        explanation: "When plates slide past each other sideways, it's a transform boundary — like California's San Andreas Fault, famous for its earthquakes.",
+      },
+    },
+    {
+      id: "tec-number-line",
+      kind: "interactive",
+      title: "Read the Richter Scale",
+      summary: "Place earthquake magnitudes 0–10.",
+      instruction: "Earthquakes are measured on a magnitude scale from 0 to 10. Tap to place each one.",
+      figure: {
+        kind: "number_line",
+        min: 0,
+        max: 10,
+        step: 1,
+        question: "Where does each earthquake sit on the magnitude scale?",
+        marks: [
+          { value: 3, label: "3 · barely felt" },
+          { value: 6, label: "6 · damaging" },
+          { value: 9, label: "9 · catastrophic" },
+        ],
+      },
+    },
+    {
+      id: "tec-bars",
+      kind: "interactive",
+      title: "Ocean vs. Land",
+      summary: "How much of Earth's surface is ocean.",
+      instruction: "Plates carry both ocean floor and continents. Compare how much of Earth's surface each covers.",
+      figure: {
+        kind: "bars",
+        items: [
+          { label: "Covered by ocean", numerator: 7, denominator: 10 },
+          { label: "Dry land", numerator: 3, denominator: 10 },
+        ],
+        caption: "About 7/10 of Earth's surface is ocean floor — most plate boundaries are hidden underwater.",
+      },
+    },
+    {
+      id: "tec-exit",
+      kind: "assessment",
+      title: "Exit Ticket",
+      summary: "Check what stuck.",
+      instruction: "Tick each one you can do now.",
+      figure: {
+        kind: "checklist",
+        title: "I can…",
+        items: [
+          "Explain what a tectonic plate is and what it floats on",
+          "Name the three types of plate boundary",
+          "Describe how mountains form at a convergent boundary",
+          "Give a real example of a transform boundary",
+          "Say roughly how much of Earth's surface is ocean",
+        ],
+      },
+    },
+  ],
+};
+
+/** Hardcoded sample lessons, reachable via `/preview?sample=<key>`. */
+export const sampleLessons: Record<string, LessonModule> = {
+  pizza: lessonModule,
+  tectonic: tectonicModule,
+};
+
 export function initialConversation(block: LessonBlock): ChatMessage[] {
   if (block.representation) {
     return [

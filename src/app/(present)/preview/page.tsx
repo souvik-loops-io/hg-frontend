@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LessonPreview } from "@/components/student/lesson-preview";
-import { getLessonModule } from "@/lib/api/client";
+import { lessonModule, tectonicModule } from "@/lib/data/lesson";
 import { fetchLessonModule } from "@/lib/api/engine";
 
 export const metadata: Metadata = {
@@ -20,14 +20,15 @@ export const metadata: Metadata = {
 export default async function PreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ lesson?: string }>;
+  searchParams: Promise<{ lesson?: string; sample?: string }>;
 }) {
-  const { lesson } = await searchParams;
+  const { lesson, sample } = await searchParams;
 
-  // No id (e.g. the dashboard "View sample lesson" card) → show the hardcoded
-  // demo module: "The Pizza Problem". Always renders, no engine needed.
+  // No id (e.g. the dashboard "View sample lesson" cards) → show a hardcoded
+  // sample. `?sample=tectonic` picks the science lesson; default is Pizza.
+  // Always renders, no engine needed.
   if (!lesson) {
-    const demo = await getLessonModule();
+    const demo = sample === "tectonic" ? tectonicModule : lessonModule;
     return <LessonPreview module={demo} />;
   }
 
