@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowRightIcon, CheckCircleIcon, PizzaIcon, RulerIcon } from "@/components/icons";
@@ -91,12 +91,35 @@ function StudentBlock({ block, index, nextBlockId }: { block: LessonBlock; index
 }
 
 export function LessonPreview({ module }: { module: LessonModule }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const observers = module.blocks.map((block, index) => {
+      const element = document.getElementById(block.id);
+      if (!element) return null;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) setActiveIndex(index);
+        },
+        { rootMargin: "-28% 0px -62% 0px", threshold: 0 },
+      );
+      observer.observe(element);
+      return observer;
+    });
+
+    return () => observers.forEach((observer) => observer?.disconnect());
+  }, [module.blocks]);
+
   return (
-    <main className="min-h-dvh overflow-hidden bg-[#f6fbfa] text-slate-800">
+    <main className="preview-scrollbar h-dvh overflow-y-auto bg-[#f6fbfa] text-slate-800">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_20%_10%,#d8f3ed_0,transparent_32%),radial-gradient(circle_at_80%_0%,#d9efff_0,transparent_28%)]" />
       <header className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
-        <a href="/curriculum/flow" className="text-lg font-extrabold tracking-[-0.04em] text-teal-800">CuePilot</a>
-        <span className="rounded-full border border-white bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 backdrop-blur">Student preview</span>
+        <a href="/" className="text-lg font-extrabold tracking-[-0.04em] text-teal-800">CuePilot</a>
+        <div className="flex items-center gap-2">
+          <a href="/curriculum/flow" className="hidden rounded-full px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-white/70 hover:text-teal-800 sm:inline-flex">Back to editor</a>
+          <a href="/" className="rounded-full border border-white bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 backdrop-blur transition hover:bg-white hover:text-teal-800">Dashboard</a>
+        </div>
       </header>
       <section className="relative mx-auto max-w-4xl px-5 pb-16 pt-8 sm:px-8 sm:pt-16">
         <div className="preview-reveal text-center">
@@ -104,11 +127,19 @@ export function LessonPreview({ module }: { module: LessonModule }) {
           <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.06em] text-slate-900 sm:text-6xl">{module.headline}</h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-600">{module.subheadline}</p>
         </div>
-        <div className="preview-reveal mt-10 flex justify-center" style={{ animationDelay: "120ms" }}>
-          <div className="flex rounded-full bg-white p-1.5 shadow-sm ring-1 ring-slate-100">
-            {module.blocks.map((block, index) => <a key={block.id} href={`#${block.id}`} aria-label={`Go to ${block.title}`} className={`size-3 rounded-full transition ${index === 0 ? "scale-125 bg-teal-600" : "bg-slate-200 hover:bg-slate-300"}`} />)}
+        <nav className="fixed right-4 top-1/2 z-30 -translate-y-1/2 sm:right-7" aria-label="Lesson progress">
+          <div className="flex flex-col items-center gap-2 rounded-full border border-white/80 bg-white/90 px-2.5 py-3 shadow-[0_8px_24px_rgba(15,118,110,0.12)] backdrop-blur">
+            {module.blocks.map((block, index) => (
+              <a
+                key={block.id}
+                href={`#${block.id}`}
+                aria-label={`Go to ${block.title}`}
+                aria-current={index === activeIndex ? "step" : undefined}
+                className={`size-3 rounded-full transition-all duration-300 ${index === activeIndex ? "scale-125 bg-teal-600 shadow-[0_0_0_4px_rgba(13,148,136,0.14)]" : index < activeIndex ? "bg-teal-300" : "bg-slate-200 hover:bg-slate-300"}`}
+              />
+            ))}
           </div>
-        </div>
+        </nav>
         <div className="mt-10 space-y-6">
           {module.blocks.map((block, index) => (
             <div id={block.id} key={block.id} className="scroll-mt-6">
