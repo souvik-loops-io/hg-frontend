@@ -17,7 +17,6 @@ interface ReservedPanelProps {
 export function ReservedPanel({
   title,
   description,
-  dependsOn,
   className,
 }: ReservedPanelProps) {
   return (
@@ -39,9 +38,6 @@ export function ReservedPanel({
       <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-ink-soft">
         {description}
       </p>
-      {dependsOn ? (
-        <p className="label-caps mt-6 text-ink-muted">Depends on {dependsOn}</p>
-      ) : null}
     </div>
   );
 }
