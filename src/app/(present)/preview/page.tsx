@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { LessonPreview } from "@/components/student/lesson-preview";
+import { getLessonModule } from "@/lib/api/client";
 import { fetchLessonModule } from "@/lib/api/engine";
 
 export const metadata: Metadata = {
@@ -10,12 +10,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * The student-facing preview of a real, engine-generated lesson.
+ * The student-facing preview.
  *
- * Requires `?lesson=<id>` (set by Build). We load that lesson from the engine
- * and render it. No fixture fallback — if there's no id we send the teacher to
- * build one, and if the lesson can't be loaded we say so plainly rather than
- * showing unrelated demo content.
+ * With `?lesson=<id>` (set by Build) we load that real lesson from the engine.
+ * With no id — e.g. the dashboard "View sample lesson" card — we render the
+ * hardcoded demo module ("The Pizza Problem") so there is always something to
+ * preview, engine or not.
  */
 export default async function PreviewPage({
   searchParams,
@@ -23,7 +23,13 @@ export default async function PreviewPage({
   searchParams: Promise<{ lesson?: string }>;
 }) {
   const { lesson } = await searchParams;
-  if (!lesson) redirect("/curriculum");
+
+  // No id (e.g. the dashboard "View sample lesson" card) → show the hardcoded
+  // demo module: "The Pizza Problem". Always renders, no engine needed.
+  if (!lesson) {
+    const demo = await getLessonModule();
+    return <LessonPreview module={demo} />;
+  }
 
   let mod = null;
   try {
