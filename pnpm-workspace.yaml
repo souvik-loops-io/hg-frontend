@@ -1,0 +1,7 @@
+# pnpm reads its settings from this file (not package.json) as of pnpm 10.
+# Single-package repo — no `packages:` list, settings only.
+
+# These two ship native binaries and need their install scripts to run.
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
