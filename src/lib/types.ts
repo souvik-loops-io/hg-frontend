@@ -1,7 +1,7 @@
 import type { EngineBlockType } from "@/lib/api/engine-types";
 
 /**
- * Domain types for CuePilot.
+ * Domain types for Chalk.
  *
  * These are the response contract for the external content service. When
  * `NEXT_PUBLIC_API_URL` is set, its payloads must match these shapes — the

@@ -5,7 +5,7 @@ import { fetchLessonModule } from "@/lib/api/engine";
 
 export const metadata: Metadata = {
   title: "Student Preview",
-  description: "A student-facing CuePilot lesson preview.",
+  description: "A student-facing Chalk lesson preview.",
 };
 
 /**
@@ -25,13 +25,13 @@ export default async function PreviewPage({
 
   if (lesson) {
     try {
-      const module = await fetchLessonModule(lesson);
-      if (module) return <LessonPreview module={module} />;
+      const mod = await fetchLessonModule(lesson);
+      if (mod) return <LessonPreview module={mod} />;
     } catch {
       // Engine unreachable — fall through to the demo module.
     }
   }
 
-  const module = await getLessonModule();
-  return <LessonPreview module={module} />;
+  const mod = await getLessonModule();
+  return <LessonPreview module={mod} />;
 }
