@@ -1,5 +1,5 @@
 /**
- * Domain types for Lumina Learning.
+ * Domain types for CuePilot.
  *
  * These are the response contract for the external content service. When
  * `NEXT_PUBLIC_API_URL` is set, its payloads must match these shapes — the

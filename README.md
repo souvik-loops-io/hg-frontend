@@ -1,4 +1,4 @@
-# Lumina Learning — Pedagogical Builder
+# CuePilot — Pedagogical Builder
 
 A teacher opens the app on a Sunday night with one sentence in their head:
 *"fractions on a number line, Grade 4, forty minutes."* Lumina turns that into a
