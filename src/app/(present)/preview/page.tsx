@@ -25,10 +25,10 @@ export default async function PreviewPage({
   const { lesson, sample } = await searchParams;
 
   // No id (e.g. the dashboard "View sample lesson" cards) → show a hardcoded
-  // sample. `?sample=tectonic` picks the science lesson; default is Pizza.
-  // Always renders, no engine needed.
+  // sample. Default is Tectonic Plates; `?sample=pizza` picks the fractions
+  // lesson. Always renders, no engine needed.
   if (!lesson) {
-    const demo = sample === "tectonic" ? tectonicModule : lessonModule;
+    const demo = sample === "pizza" ? lessonModule : tectonicModule;
     return <LessonPreview module={demo} />;
   }
 
