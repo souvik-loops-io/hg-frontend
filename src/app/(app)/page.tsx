@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArtifactCard } from "@/components/dashboard/artifact-card";
 import { CreateArtifactCard } from "@/components/dashboard/create-artifact-card";
+import { SampleLessonCard } from "@/components/dashboard/sample-lesson-card";
 import { WeeklyFocusCard } from "@/components/dashboard/weekly-focus-card";
 import { ArrowRightIcon } from "@/components/icons";
 import { Page } from "@/components/shell/app-shell";
@@ -38,7 +39,10 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
         <WeeklyFocusCard focus={focus} />
-        <CreateArtifactCard />
+        <div className="flex flex-col gap-4">
+          <CreateArtifactCard />
+          <SampleLessonCard />
+        </div>
       </div>
 
       <section className="mt-12">
